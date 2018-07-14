@@ -165,6 +165,7 @@ class Wp_Cbf {
 		$this->loader->add_filter( 'plugin_action_links_' . $plugin_basename, $plugin_admin, 'add_action_links' );
 
 		$this->loader->add_action('admin_init', $plugin_admin, 'options_update');
+		 $this->loader->add_action( 'login_enqueue_scripts', $plugin_admin, 'wp_cbf_login_css' );
 	}
 
 	/**
@@ -178,8 +179,24 @@ class Wp_Cbf {
 
 		$plugin_public = new Wp_Cbf_Public( $this->get_plugin_name(), $this->get_version() );
 
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		/* 
+        *  The following actions are commented out as we won't need any added style or script to our theme
+        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+        $this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+        */
+
+        // Below are our "public" frontend related actions and filters hooks
+
+        // Cleanup - Actions and filters
+          //Actions
+        $this->loader->add_action( 'init', $plugin_public, 'wp_cbf_cleanup' );
+        $this->loader->add_action( 'wp_loaded', $plugin_public, 'wp_cbf_remove_comments_inline_styles' );
+        $this->loader->add_action( 'wp_loaded', $plugin_public, 'wp_cbf_remove_gallery_styles' );
+        $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'wp_cbf_cdn_jquery', PHP_INT_MAX);
+
+           //Filters
+        $this->loader->add_filter('wp_headers', $plugin_public, 'wp_cbf_remove_x_pingback');
+        $this->loader->add_filter( 'body_class', $plugin_public, 'wp_cbf_body_class_slug' );
 
 	}
 
